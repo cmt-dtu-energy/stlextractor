@@ -1,13 +1,26 @@
 classdef STLExtractor < handle
-  %STLEXTRACTOR Extract individual objects from an STL FILE
-  %   Objects of this class can process an STL file and retrieve individual hexagonal
-  %      prims. The goal is to extract individual "particles" from a "packing".
+  %STLEXTRACTOR Extract individual hexagonal prisms from a packed STL file
+  %   Objects of this class process an STL file that contains a packing of many
+  %   hexagonal prisms glued together into a single mesh, and split it back into
+  %   individual "particles". This is the main entry point of the STLExtractor
+  %   package: construct an instance with a filename, then call PROCESS to obtain
+  %   an EXTRACTEDPACKING with one HEXAGONALPRISM per particle found in the file.
+  %
+  %   e = STLEXTRACTOR(filename, saveDir) creates an extractor for the STL file
+  %      named 'filename'.
+  %   ep = e.process() runs the extraction and returns the resulting ExtractedPacking.
+  %
+  % Example:
+  %   e = STLExtractor("packing.stl", pwd);
+  %   ep = e.process();
+  %
+  % See also EXTRACTEDPACKING, HEXAGONALPRISM, STLEXTRACTTOJSON
 
 
   properties (SetAccess = private)
-    baseFilename string {mustBeFile}
-    saveDir string {mustBeFolder}
-    shouldSave (1,1) logical
+    baseFilename string {mustBeFile} % Path to the input STL file that will be parsed
+    saveDir string {mustBeFolder} % Folder where individual particle STL files are written when ShouldSave is true
+    shouldSave (1,1) logical % Whether PROCESS should also write each extracted particle to its own STL file in saveDir
   end
 
 
@@ -31,14 +44,18 @@ classdef STLExtractor < handle
 
   methods
     function obj = STLExtractor(filename,saveDir,options)
-      %STLEXTRACTOR Construct an extractor that process a STL file and partitions
-      %     into individual STL objects.
+      %STLEXTRACTOR Construct an extractor that processes a STL file and partitions
+      %     it into individual particle meshes.
       %
       % ex = STLEXTRACTOR(filename,saveDir) will instantiate an extractor
-      %     based on the STL file named 'filename', and will save the resulting
-      %     individual STL files of the hexagonal prisms into 'saveDir'
+      %     based on the STL file named 'filename'. If 'ShouldSave' is true,
+      %     individual STL files for each extracted hexagonal prism are written
+      %     into 'saveDir'; otherwise 'saveDir' may be left empty ([]).
       %
-      % See also HEXAGONALPRISM
+      % ex = STLEXTRACTOR(filename,saveDir,'ShouldSave',true) also writes each
+      %     extracted particle to its own STL file in 'saveDir'.
+      %
+      % See also HEXAGONALPRISM, EXTRACTEDPACKING
       arguments
         filename
         saveDir
@@ -53,7 +70,21 @@ classdef STLExtractor < handle
     end
 
     function ep = process(obj,options)
-      %PROCESS Run the extraction process, returning the extracted information
+      %PROCESS Run the extraction process and return the extracted particles
+      %
+      % ep = PROCESS(obj) reads obj.baseFilename, separates its mesh into
+      %    individual hexagonal prisms, and returns the result as an
+      %    EXTRACTEDPACKING.
+      %
+      % ep = PROCESS(obj,'BoundingBoxLength',L) additionally discards any
+      %    particle whose center falls outside a square of side L centered
+      %    at the origin, in both x and y.
+      %
+      % ep = PROCESS(obj,'ZMinLimit',zmin) / PROCESS(obj,'ZMaxLimit',zmax)
+      %    additionally discard particles below zmin, or above zmax,
+      %    respectively.
+      %
+      % See also EXTRACTEDPACKING
       arguments
         obj STLExtractor
         options.BoundingBoxLength (1,1) double = NaN % Maximum length of the packing in both the x- and y-directions; will eliminate any particles with abs(x) (or abs(y)) >= +/- BoundingBoxLength/2
@@ -165,7 +196,9 @@ classdef STLExtractor < handle
     end
 
     function [Packing,geometricInfo] = processParticles(obj)
-
+      % PROCESSPARTICLES Fit geometric parameters for every particle found by
+      %   EXTRACTINDIVIDUALPARTICLES, returning per-particle axes/radii/heights
+      %   (Packing) and volume/center/triangulation info (geometricInfo).
 
       Packing = {};
 
@@ -192,6 +225,9 @@ classdef STLExtractor < handle
 
 
     function [TheAxis, TheRadius,TheAxialHeight,center, TheAxis2,Tri2]  = processIndividualParticle(obj,iParticle)
+      % PROCESSINDIVIDUALPARTICLE Fit a hexagonal prism's axis, radius and height
+      %   to the particle's local triangulation, identified by exploiting the 12
+      %   mutually parallel edges that run along the prism's main axis.
       arguments
         obj STLExtractor
         iParticle (1,1) double % particle index to process
@@ -323,6 +359,8 @@ classdef STLExtractor < handle
 
 
     function TR = buildLocalTriangulation(obj,iParticle)
+      % BUILDLOCALTRIANGULATION Extract the subset of the global triangulation
+      %   belonging to one particle, renumbering its points locally.
 
       % find the triangle IDs that were grouped into given particle
       % whose index is iParticle
