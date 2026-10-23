@@ -1,4 +1,5 @@
 function v = getDirectionVector(direction)
+            % GETDIRECTIONVECTOR Unit vector for "x"/"y"/"z"; errors otherwise
             switch direction
                 case "x"
                     v = [1,0,0];

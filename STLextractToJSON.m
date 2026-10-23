@@ -1,5 +1,29 @@
 function STLextractToJSON(input, output, options)
-%STLEXTRACTTOJSON Write a JSON file after running STL extraction process on filename
+%STLEXTRACTTOJSON Extract a packing from an STL file and write it to a JSON file
+%
+%   STLEXTRACTTOJSON(input, output) reads the STL file 'input', extracts its
+%       packing of hexagonal prisms via STLEXTRACTOR, and writes the resulting
+%       EXTRACTEDPACKING as JSON (via jsonencode) to the file 'output'.
+%
+%   STLEXTRACTTOJSON(input, output, 'RemoveOutlierRangeZ', tf) controls whether
+%       particles below 'OutlierZThreshold' are discarded before encoding.
+%       Default: true.
+%
+%   STLEXTRACTTOJSON(input, output, 'OutlierZThreshold', z) sets the z-position
+%       threshold used above. Default: 0.0.
+%
+%   STLEXTRACTTOJSON(input, output, 'Cutoff', margin, 'CutoffDirection', dir)
+%       additionally trims the extracted packing with EXTRACTEDPACKING.CUTOFF,
+%       removing a fraction 'margin' of the side length starting from direction
+%       'dir' ("x", "y" or "z"). Default margin: 0.0 (no cutoff).
+%
+%   STLEXTRACTTOJSON(input, output, 'BoundingBoxLength', L) discards particles
+%       outside a square of side L (in x and y) centered at the origin.
+%
+% Example:
+%   STLextractToJSON("packing.stl", "packing.json", "Cutoff", 0.1);
+%
+% See also STLEXTRACTOR, EXTRACTEDPACKING
 arguments
     input (1,1) string
     output (1,1) string

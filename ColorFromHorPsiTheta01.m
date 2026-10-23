@@ -1,4 +1,17 @@
 function ThisColSegment = ColorFromHorPsiTheta01(a1,a2,a3)
+%COLORFROMHORPSITHETA01 Legacy color helper. NOT part of the public API.
+%   INTERNAL / DEAD CODE: this function is not called anywhere else in this
+%   package (including PackingFigureRenderer, which supersedes it with its
+%   own categorical color-assignment scheme). It predates PackingFigureRenderer
+%   and is kept only for reference; see docs/known-untested.md for the coverage
+%   note that flags it as a removal candidate. Do not build new functionality
+%   on top of it.
+%
+%   Historical behavior: maps either a 3-D orientation vector [Hx,Hy,Hz] (3
+%   input arguments) or an explicit (phi,theta) pair in radians (2 input
+%   arguments) to an RGB color via an HSV colorwheel, so that orientation
+%   direction maps to hue and polar angle maps to saturation/value. Returns a
+%   neutral gray ([0.5 0.5 0.5]) if the computed HSV triple contains NaN.
 if exist('a3')
     
     HxSegment = a1 ;
