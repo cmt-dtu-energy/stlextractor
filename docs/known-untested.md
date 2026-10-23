@@ -5,18 +5,18 @@ running `coverage` in the MATLAB Command Window; the HTML report under
 `coverageReport/` is not checked in, so this file is the durable record of what
 the suite deliberately does not exercise.
 
-Measured on 2026-10-22 with MATLAB R2024b, on branch `develop`, after
-completing issue #13's remaining failure-mode tests: added a test for two
-independently valid particles merged into one by a shared vertex (a more
-realistic non-manifold scenario than a hand-crafted degenerate triangle
-set), a truncated-binary-STL malformed-input test, and a single-particle
-alignment-statistics test (replacing a redundant single-particle test that
-only checked `length(...) == 1`, which `test_process_can_parse_one_particle`
-already implied). All 38 tests pass. Overall statement coverage of the
-measured files is unchanged at **86.8%** (the same file set `coverage.m`
-measures, i.e. every top-level `.m` except `coverage.m`, `Contents.m`,
-`CutoffMethod.m`, and `CutoffProcedure.m`) — the new/changed tests exercise
-lines already covered by other tests, rather than opening up new ones.
+Measured on 2026-10-23 with MATLAB R2024b, on branch `develop`, after fixing
+issue #26: `HexagonalPrismTriangulation` (renamed from
+`HexagonalPrismFanTriangulation`) now triangulates each hexagonal cap with
+an ear+center split instead of a single-vertex fan, and `HexagonalPrism.write`
+wraps its triangulation in a real `triangulation` object before calling
+`stlwrite` (the custom strategy class only fakes `isa(...,'triangulation')`
+and doesn't implement methods like `faceNormal` that `stlwrite` needs). All
+39 tests pass. Overall statement coverage of the measured files improved to
+**87.2%** (the same file set `coverage.m` measures, i.e. every top-level
+`.m` except `coverage.m`, `Contents.m`, `CutoffMethod.m`, and
+`CutoffProcedure.m`) — the new round-trip test and the extra line in
+`HexagonalPrism.write` are both fully exercised.
 
 | File | Statements covered |
 | --- | --- |
@@ -24,9 +24,9 @@ lines already covered by other tests, rather than opening up new ones.
 | `STLExtractorError.m` | 36/38 |
 | `ExtractedPacking.m` | 112/147 |
 | `STLextractToJSON.m` | 26/29 |
-| `HexagonalPrism.m` | 18/19 |
+| `HexagonalPrism.m` | 20/20 |
 | `ColorFromHorPsiTheta01.m` | 0/13 |
-| `HexagonalPrismFanTriangulation.m` | 37/37 |
+| `HexagonalPrismTriangulation.m` | 41/41 |
 | `PackingFigureRenderer.m` | 16/16 |
 | `GeometricType.m` | 5/5 |
 | `projectDir.m` | 1/1 |
@@ -102,20 +102,19 @@ resolved rather than recorded:
 1. **`ColorFromHorPsiTheta01.m` is orphaned.** No file in the repository calls it.
    It looks like leftover code from before `PackingFigureRenderer` existed and can
    probably be deleted.
-2. **`HexagonalPrism.write()` produces STL files `STLExtractor` cannot
-   re-read.** Found while building the merged-particles test for issue #13:
-   a lone, otherwise-valid `HexagonalPrism` built from
-   `HexagonalPrismFanTriangulation` (i.e. without an explicit triangulation
-   passed in) fails `STLExtractor`'s own "exactly one group of 12 parallel
-   edges" check once written to an STL file and read back — even with no
-   second particle involved. The project's real STL fixtures round-trip
-   fine; they just aren't produced by `HexagonalPrismFanTriangulation`.
-   Filed as issue #26.
 
 `CutoffMethod.vertices` being dead (previously listed here) was fixed under
 issue #24: `ExtractedPacking.m:264` now compares with `==` instead of
 `strcmp`, `tests/testExtractedPacking.m` exercises both `CutoffMethod` arms
 directly, and `cutoffz` is no longer an untested feature path above.
+
+`HexagonalPrism.write()` producing STL files `STLExtractor` could not
+re-read (previously listed here) was fixed under issue #26: the cap
+triangulation in `HexagonalPrismTriangulation` (renamed from
+`HexagonalPrismFanTriangulation`) now uses an ear+center split instead of a
+single-vertex fan, so it no longer creates a spurious second group of 12
+parallel edges. `tests/testHexagonalPrism.m` now exercises the full
+`write()` → `STLExtractor.process()` round trip.
 
 `ExtractedPacking.m:286-287` (`NoParticlesInRange` in `filterPacking`) and
 `STLextractToJSON.m:25` (the `RemoveOutlierRangeZ` true arm) and `:51` (the

@@ -12,6 +12,22 @@ releases. Once the API is considered stable, the package will be released as
 Note: tags `v0.4.0`, `v0.9.0`, and `v0.10.0` were never published; the
 sequence skips directly to the next release.
 
+## [0.15.0] - 2026-10-23
+
+### Fixed
+- `HexagonalPrism.write()` (via the renamed `HexagonalPrismTriangulation`,
+  formerly `HexagonalPrismFanTriangulation`) produced STL files that
+  `STLExtractor` could not re-read. The hexagonal caps were triangulated as
+  a single-vertex fan, whose long diagonal is geometrically parallel to two
+  of a regular hexagon's own edges, spuriously tripping `STLExtractor`'s
+  "exactly one group of 12 parallel edges" check. Caps are now triangulated
+  with an ear+center split (matching the project's real STL fixtures)
+  instead. Separately, `HexagonalPrism.write()` also failed outright with
+  `UndefinedFunction: faceNormal`, since the triangulation strategy class
+  only fakes `isa(...,'triangulation')` without implementing the methods
+  `stlwrite` calls on it; `write()` now wraps its triangulation in a real
+  `triangulation` object first.
+
 ## [0.14.0] - 2026-10-23
 
 ### Added

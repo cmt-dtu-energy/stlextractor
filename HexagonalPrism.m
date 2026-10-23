@@ -36,7 +36,7 @@ classdef HexagonalPrism
       obj.volume = obj.area * obj.thickness;
 
       if isempty(triangulation)
-          triangulation = HexagonalPrismFanTriangulation(position,radius,thickness,obj.normal);
+          triangulation = HexagonalPrismTriangulation(position,radius,thickness,obj.normal);
       end
 
       STLExtractorError.mustBeValidTriangulation(triangulation, "HexagonalPrism constructor");
@@ -47,7 +47,13 @@ classdef HexagonalPrism
     function write(obj,filename)
       %WRITE Write the object triangulation to the filename STL file.
 
-      stlwrite(obj.triangulation,filename)
+      % obj.triangulation may be a HexagonalPrismTriangulation, which only
+      % fakes isa(...,'triangulation') and does not implement methods like
+      % faceNormal that stlwrite calls on it. Wrap Points/ConnectivityList
+      % in a real triangulation so stlwrite's internals resolve correctly
+      % regardless of which strategy produced them (issue #26).
+      TR = triangulation(obj.triangulation.ConnectivityList, obj.triangulation.Points);
+      stlwrite(TR,filename)
     end
   end
 end

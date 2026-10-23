@@ -1,5 +1,5 @@
-classdef HexagonalPrismFanTriangulation
-    %HEXAGONALPRISMFANTRIANGULATION Strategy for creating a simple triangulation for
+classdef HexagonalPrismTriangulation
+    %HEXAGONALPRISMTRIANGULATION Strategy for creating a simple triangulation for
     % a prism from its geometric information
 
     properties
@@ -9,8 +9,8 @@ classdef HexagonalPrismFanTriangulation
 
 
     methods
-        function obj = HexagonalPrismFanTriangulation(position,radius,thickness,normal)
-            %HEXAGONALPRISMFANTRIANGULATION Construct an instance of this class
+        function obj = HexagonalPrismTriangulation(position,radius,thickness,normal)
+            %HEXAGONALPRISMTRIANGULATION Construct an instance of this class
             arguments
                 position (1,3) double
                 radius (1,1) double {mustBePositive}
@@ -54,10 +54,16 @@ classdef HexagonalPrismFanTriangulation
             % Define triangular faces
             faces = [];
 
-            % Bottom face triangles (vertices 1-6)
-            for i = 1:4
-                faces = [faces; 1, i+1, i+2];
-            end
+            % Bottom face triangles (vertices 1-6): 3 "ear" triangles plus
+            % one center triangle over the alternating vertices, using only
+            % skip-one diagonals. A single-vertex fan would instead use the
+            % long diagonal (e.g. 1-4), which in a regular hexagon is
+            % parallel to two of the hexagon's own edges and spuriously
+            % collides with STLExtractor's axial-edge detection (issue #26).
+            faces = [faces; 5, 6, 1];
+            faces = [faces; 1, 2, 3];
+            faces = [faces; 3, 4, 5];
+            faces = [faces; 1, 3, 5];
 
             % Side faces (rectangular faces split into triangles)
             for i = 1:6
@@ -76,10 +82,12 @@ classdef HexagonalPrismFanTriangulation
                 faces = [faces; v1, v4, v2];  % Second triangle
             end
 
-                        % Top face triangles (vertices 7-12)
-            for i = 1:4
-                faces = [faces; 7, i+7, i+8];
-            end
+            % Top face triangles (vertices 7-12): mirrored winding relative
+            % to the bottom cap so face orientation stays consistent.
+            faces = [faces; 7, 8, 9];
+            faces = [faces; 9, 10, 11];
+            faces = [faces; 11, 12, 7];
+            faces = [faces; 7, 9, 11];
 
             obj.ConnectivityList = faces;
 

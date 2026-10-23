@@ -27,5 +27,38 @@ classdef testHexagonalPrism < matlab.unittest.TestCase
 
         end
 
+        function test_write_roundtrips_through_STLExtractor(testCase)
+            % Regression test for issue #26: a lone HexagonalPrism built
+            % with the default triangulation must produce an STL file that
+            % STLExtractor can read back as a single valid particle.
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            position = [1, -2, 3];
+            radius = 2.0;
+            thickness = 1.0;
+            normal = [0, 0, 1];
+
+            prism = HexagonalPrism(position, radius, thickness, normal);
+            prism.write(filename);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+            ep = extractor.process();
+
+            testCase.verifyEqual(length(ep), 1);
+
+            tol = 1e-3;
+            extractedPrism = ep.items(1);
+            testCase.verifyLessThanOrEqual(abs(extractedPrism.radius-radius), tol);
+            testCase.verifyLessThanOrEqual(abs(extractedPrism.thickness-thickness), tol);
+            testCase.verifyLessThanOrEqual(abs(extractedPrism.position-position), tol);
+        end
+
     end
+end
+
+function deleteIfExists(filename)
+if isfile(filename)
+    delete(filename);
+end
 end
