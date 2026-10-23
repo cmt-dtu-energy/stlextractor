@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the metadata below.
+type: software
+title: stlextractor
+abstract: >-
+  MATLAB package to process a large STL file containing a packing of
+  hexagonal prisms and extract each prism's geometric parameters (radius,
+  axis, volume, etc.).
+authors:
+  - family-names: Fortkamp
+    given-names: "Fábio Pinto"
+    email: fabio@fabiofortkamp.com
+repository-code: "https://github.com/cmt-dtu-energy/stlextractor"
+version: 0.15.0
+# NOTE (added while resolving issue #20): `version` matches the current
+# Contents.m version at the time this file was added. As of this writing
+# that version has not yet been tagged (the latest Git tag is v0.14.0);
+# update `version`/`date-released` together at the next tagged release.
+#
+# `license` is intentionally omitted: this repository has no LICENSE file
+# at the root yet (see the "Maintainer status" section of README.md and
+# issue #20). Choosing a license is the maintainer's/organization's
+# decision, not something to infer here. Add an SPDX `license` identifier
+# to this file once a LICENSE file is added to the repository.

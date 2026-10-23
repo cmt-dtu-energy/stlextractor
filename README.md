@@ -17,6 +17,23 @@ have a certain mechanical strength). Alternatively, you can just use the project
 to save the individual STL files and import them into a simulation software, manually setting
 up different parameters.
 
+## Maintainer status
+
+> **Placeholder — needs confirmation from the maintainer/organization.**
+> As of October 2026, the original maintainer, Fábio Pinto Fortkamp, is
+> stepping back from active day-to-day maintenance of this project.
+>
+> - For bug reports, feature requests, or questions, please open a
+>   [GitHub issue](https://github.com/cmt-dtu-energy/stlextractor/issues) —
+>   this remains the best way to get visibility, though response times may
+>   be slower than before.
+> - A designated successor or point of contact within the `cmt-dtu-energy`
+>   organization has not been announced here yet; this section should be
+>   updated once one is in place.
+> - The codebase and test suite are in a working state as of the latest
+>   tagged release (see [CHANGELOG.md](./CHANGELOG.md)), but ongoing
+>   maintenance and support should not be assumed.
+
 ## Installation
 
 - Clone this repo to a location of choice;
