@@ -58,5 +58,22 @@ classdef testExtractedPacking < matlab.unittest.TestCase
             testCase.verifyEqual(epDefault.items(1).position, epVertices.items(1).position);
         end
 
+        function test_single_particle_statistics_are_well_defined(testCase)
+            % A packing of exactly one item has no spread to speak of: this
+            % pins down that the alignment standard deviations come out as
+            % a well-defined 0 (MATLAB's std special-cases a 1-element
+            % sample rather than dividing by zero into NaN), not NaN or an
+            % error.
+            prism = HexagonalPrism([0, 0, 0], 1.0, 1.0, [0, 0, 1]);
+            ep = ExtractedPacking(prism);
+
+            testCase.verifyEqual(ep.standardDeviationAlignmentX, 0);
+            testCase.verifyEqual(ep.standardDeviationAlignmentY, 0);
+            testCase.verifyEqual(ep.standardDeviationAlignmentZ, 0);
+            testCase.verifyEqual(ep.volumeWeightedStandardDeviationAlignmentX, 0);
+            testCase.verifyEqual(ep.volumeWeightedStandardDeviationAlignmentY, 0);
+            testCase.verifyEqual(ep.volumeWeightedStandardDeviationAlignmentZ, 0);
+        end
+
     end
 end

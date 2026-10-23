@@ -202,17 +202,6 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 "MATLAB:polyfun:stlInvalidData");
         end
 
-        function test_process_can_parse_single_particle_mesh(testCase)
-            testFileDir = fullfile(projectDir, "tests", "test_stl_files");
-            filename = fullfile(testFileDir, ...
-                "particle_r_1_t_1_c_0_0_0_n_0_0_1.stl");
-            extractor = STLExtractor(filename, [], "ShouldSave", false);
-
-            extractedPacking = extractor.process();
-
-            testCase.verifyEqual(length(extractedPacking), 1);
-        end
-
         function test_rejects_non_manifold_geometry(testCase)
             filename = tempname + ".stl";
             cleanup = onCleanup(@() deleteIfExists(filename));
@@ -233,8 +222,83 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
             extractor = STLExtractor(filename, [], "ShouldSave", false);
 
+            try
+                extractor.process();
+                testCase.verifyFail("Expected non-manifold geometry to be rejected.");
+            catch ME
+                testCase.verifyEqual(ME.identifier, ...
+                    'STLExtractor:STLExtractor:InvalidParticleGeometry');
+                testCase.verifyTrue(contains(ME.message, "Particle 1"));
+                testCase.verifyTrue(contains(ME.message, ...
+                    "expected exactly one group of 12 parallel edges"));
+                testCase.verifyTrue(contains(ME.message, "found 0"));
+            end
+        end
+
+        function test_rejects_two_particles_merged_by_a_shared_vertex(testCase)
+            % Two independently valid hexagonal prisms that happen to touch
+            % (share exactly one vertex coordinate) are merged by
+            % extractIndividualParticles's point-connectivity grouping into a
+            % single "particle" -- a more realistic non-manifold scenario for
+            % this codebase than a hand-crafted degenerate triangle set.
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            testFileDir = fullfile(projectDir, "tests", "test_stl_files");
+            baseFile = fullfile(testFileDir, ...
+                "particle_r_1_t_1_c_0_0_0_n_0_0_1.stl");
+            TR = stlread(baseFile);
+            points = TR.Points;
+            faces = TR.ConnectivityList;
+
+            % Translate opposite extreme vertices together for point-only contact.
+            [~, minIdx] = min(points * [1; 2; 3]);
+            [~, maxIdx] = max(points * [1; 2; 3]);
+            duplicatePoints = points + (points(maxIdx, :) - points(minIdx, :));
+            testCase.assertEqual( ...
+                size(intersect(points, duplicatePoints, "rows"), 1), 1);
+
+            mergedPoints = [points; duplicatePoints];
+            mergedFaces = [faces; faces + size(points, 1)];
+            stlwrite(triangulation(mergedFaces, mergedPoints), filename);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+
+            try
+                extractor.process();
+                testCase.verifyFail( ...
+                    "Expected two particles sharing a vertex to be rejected.");
+            catch ME
+                testCase.verifyEqual(ME.identifier, ...
+                    'STLExtractor:STLExtractor:InvalidParticleGeometry');
+                testCase.verifyTrue(contains(ME.message, "Particle 1"));
+                testCase.verifyTrue(contains(ME.message, "found 0"));
+            end
+        end
+
+        function test_rejects_truncated_binary_stl_input(testCase)
+            % A binary STL whose header declares more triangles than the
+            % file actually contains -- a more realistic "malformed" input
+            % than plain non-STL text (e.g. a partially-written export).
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            fid = fopen(filename, "w");
+            testCase.assertGreaterThan(fid, 0);
+            fwrite(fid, zeros(1, 80, "uint8"), "uint8");
+            fwrite(fid, uint32(5), "uint32"); % claims 5 triangles
+            % but only write one triangle's worth of data
+            fwrite(fid, single([0, 0, 1]), "single");  % normal
+            fwrite(fid, single([0, 0, 0]), "single");  % vertex 1
+            fwrite(fid, single([1, 0, 0]), "single");  % vertex 2
+            fwrite(fid, single([0, 1, 0]), "single");  % vertex 3
+            fwrite(fid, uint16(0), "uint16");          % attribute byte count
+            fclose(fid);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+
             testCase.verifyError(@() extractor.process(), ...
-                "STLExtractor:STLExtractor:InvalidParticleGeometry");
+                "MATLAB:polyfun:stlFailedToRead");
         end
 
     end

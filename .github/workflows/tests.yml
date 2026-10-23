@@ -1,0 +1,39 @@
+# Authored by Claude (Anthropic, model claude-sonnet-5) on 2026-10-22,
+# in collaboration with Fábio Pinto Fortkamp.
+
+name: Tests
+
+# Runs the MATLAB test suite on every push and pull request.
+#
+# Source files live at the repository root, and tests live under "tests",
+# matching the layout used by `coverage.m` and `runtests("tests")` locally.
+# This repo is public, so MathWorks' hosted licensing for GitHub-hosted
+# runners applies and no MLM_LICENSE_TOKEN secret is needed.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v3
+
+      - name: Run tests
+        uses: matlab-actions/run-tests@v3
+        with:
+          source-folder: .
+          select-by-folder: tests
+          test-results-junit: test-results/results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/results.xml

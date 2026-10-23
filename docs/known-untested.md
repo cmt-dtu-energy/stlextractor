@@ -5,19 +5,25 @@ running `coverage` in the MATLAB Command Window; the HTML report under
 `coverageReport/` is not checked in, so this file is the durable record of what
 the suite deliberately does not exercise.
 
-Measured on 2026-10-21 with MATLAB R2024b, on branch `develop`, after the
-issue #24 fix (the `strcmp`/`CutoffMethod` dead-branch correction in
-`ExtractedPacking.filterPacking`). All 36 tests pass. Overall statement
-coverage of the measured files is **85.4%** (the same file set `coverage.m`
+Measured on 2026-10-22 with MATLAB R2024b, on branch `develop`, after
+completing issue #13's remaining failure-mode tests: added a test for two
+independently valid particles merged into one by a shared vertex (a more
+realistic non-manifold scenario than a hand-crafted degenerate triangle
+set), a truncated-binary-STL malformed-input test, and a single-particle
+alignment-statistics test (replacing a redundant single-particle test that
+only checked `length(...) == 1`, which `test_process_can_parse_one_particle`
+already implied). All 38 tests pass. Overall statement coverage of the
+measured files is unchanged at **86.8%** (the same file set `coverage.m`
 measures, i.e. every top-level `.m` except `coverage.m`, `Contents.m`,
-`CutoffMethod.m`, and `CutoffProcedure.m`).
+`CutoffMethod.m`, and `CutoffProcedure.m`) — the new/changed tests exercise
+lines already covered by other tests, rather than opening up new ones.
 
 | File | Statements covered |
 | --- | --- |
 | `STLExtractor.m` | 115/117 |
 | `STLExtractorError.m` | 36/38 |
-| `ExtractedPacking.m` | 111/147 |
-| `STLextractToJSON.m` | 21/29 |
+| `ExtractedPacking.m` | 112/147 |
+| `STLextractToJSON.m` | 26/29 |
 | `HexagonalPrism.m` | 18/19 |
 | `ColorFromHorPsiTheta01.m` | 0/13 |
 | `HexagonalPrismFanTriangulation.m` | 37/37 |
@@ -66,17 +72,17 @@ These are reachable and worth covering eventually, but no test drives them yet.
 - `ExtractedPacking.m:148-149` — `InvalidDirection` in `cutoff`. Unreachable
   through the public API as written, because `startDirection` is already
   constrained by `mustBeMember` upstream; the `otherwise` arm is defensive.
-- `ExtractedPacking.m:286-287` — `NoParticlesInRange` in `filterPacking`. Firing
-  this needs a packing plus a range that excludes every particle.
 - `STLextractToJSON.m:41-42` — `FileOpenFailed`. Needs an unwritable output path.
-- `STLextractToJSON.m:46-52` — the `catch` block, both the wrap-as-`UnhandledError`
-  arm and the `rethrow` arm.
-- `STLextractToJSON.m:25` — the `RemoveOutlierRangeZ` true arm
-  (`zMinLimit = options.OutlierZThreshold`). The sole test exercising this
-  entry point now passes `"RemoveOutlierRangeZ", false`, since the fixture
-  particle straddles the default `ZMinLimit=0` boundary and the issue #24 fix
-  means it is now correctly excluded under real vertices-based filtering; see
-  `CHANGELOG.md`'s `[Unreleased]` entry.
+- `STLextractToJSON.m:49` — the `catch` block's wrap-as-`UnhandledError` arm.
+  Needs an error from inside the `try` whose identifier doesn't start with
+  `STLExtractor:`.
+- `STLExtractor.m:120` — the `nParticles = max(obj.pointsInParticle)` branch
+  for an empty `pointsInParticle` (i.e. a triangulation with zero points).
+  Unreachable through the public file-based API: `stlread` already throws
+  `MATLAB:polyfun:stlInvalidData`/`stlFailedToRead` for a facet-less or empty
+  STL before `extractIndividualParticles` ever runs (see
+  `test_rejects_empty_stl_input` and `test_rejects_valid_stl_with_no_facets`
+  in `tests/testSTLExtractor.m`).
 
 ### Untested feature paths
 
@@ -85,17 +91,39 @@ These are reachable and worth covering eventually, but no test drives them yet.
   actually trips the `xlim`/`ylim` comparisons.
 - `ExtractedPacking.m:143-146` — the `"y"` and `"z"` arms of `cutoff`. Only `"x"`
   is exercised; the arms are structurally identical.
+- `STLextractToJSON.m:35` — the `Cutoff > 0` branch that applies `ep.cutoff(...)`.
+  No test passes a nonzero `Cutoff` through this entry point.
 
 ## Open questions
 
-One item found while measuring this is not just a coverage gap and should be
+Items found while measuring this are not just coverage gaps and should be
 resolved rather than recorded:
 
 1. **`ColorFromHorPsiTheta01.m` is orphaned.** No file in the repository calls it.
    It looks like leftover code from before `PackingFigureRenderer` existed and can
    probably be deleted.
+2. **`HexagonalPrism.write()` produces STL files `STLExtractor` cannot
+   re-read.** Found while building the merged-particles test for issue #13:
+   a lone, otherwise-valid `HexagonalPrism` built from
+   `HexagonalPrismFanTriangulation` (i.e. without an explicit triangulation
+   passed in) fails `STLExtractor`'s own "exactly one group of 12 parallel
+   edges" check once written to an STL file and read back — even with no
+   second particle involved. The project's real STL fixtures round-trip
+   fine; they just aren't produced by `HexagonalPrismFanTriangulation`.
+   Filed as issue #26.
 
 `CutoffMethod.vertices` being dead (previously listed here) was fixed under
 issue #24: `ExtractedPacking.m:264` now compares with `==` instead of
 `strcmp`, `tests/testExtractedPacking.m` exercises both `CutoffMethod` arms
 directly, and `cutoffz` is no longer an untested feature path above.
+
+`ExtractedPacking.m:286-287` (`NoParticlesInRange` in `filterPacking`) and
+`STLextractToJSON.m:25` (the `RemoveOutlierRangeZ` true arm) and `:51` (the
+`rethrow` arm of the `catch` block), all previously listed here, are no
+longer gaps: a GitHub Copilot coding-agent change to
+`tests/testSTLextractToJSON.m` added a `verifyError` assertion that calls
+`STLextractToJSON` with default options against a fixture particle that
+straddles the default `ZMinLimit=0` boundary, so it is excluded by the
+issue #24 vertices-based filtering fix, leaving no particles and tripping
+`NoParticlesInRange` — which `STLextractToJSON`'s `catch` block rethrows
+unchanged, since its identifier already starts with `STLExtractor:`.
