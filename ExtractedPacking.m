@@ -17,27 +17,35 @@ classdef ExtractedPacking < handle
 
     properties (SetAccess = private)
         items (1,:) HexagonalPrism % Array of HexagonalPrism objects that make up this packing
+    end
 
-        % --- Geometry bounds: axis-aligned bounding box of all prism vertices ---
+    % --- Geometry bounds: axis-aligned bounding box of all prism vertices ---
+    properties (SetAccess = private)
         xmin (1,1) double % Minimum x-coordinate over all prism vertices
         xmax (1,1) double % Maximum x-coordinate over all prism vertices
         ymin (1,1) double % Minimum y-coordinate over all prism vertices
         ymax (1,1) double % Maximum y-coordinate over all prism vertices
         zmin (1,1) double % Minimum z-coordinate over all prism vertices
         zmax (1,1) double % Maximum z-coordinate over all prism vertices
+    end
 
-        % --- Dimensions and volume of the bounding box ---
+    % --- Dimensions and volume of the bounding box ---
+    properties (SetAccess = private)
         Lx (1,1) double % Bounding-box side length along x (xmax - xmin)
         Ly (1,1) double % Bounding-box side length along y (ymax - ymin)
         Lz (1,1) double % Bounding-box side length along z (zmax - zmin)
         volume (1,1) double % Bounding-box volume (Lx * Ly * Lz); the denominator used by volumetricFillingFraction
+    end
 
-        % --- Filling fraction ---
+    % --- Filling fraction ---
+    properties (SetAccess = private)
         volumetricFillingFraction (1,1) double % Fraction of the bounding-box volume occupied by prisms: sum(items.volume) / volume, in [0,1]
+    end
 
-        % --- Alignment statistics: how well each prism's normal aligns with the x, y and z axes ---
-        % For a given axis, "alignment" of one prism is dot(prism.normal, axisVector), i.e. the
-        % cosine of the angle between the prism's axis and that coordinate axis (so it lies in [-1,1]).
+    % --- Alignment statistics: how well each prism's normal aligns with the x, y and z axes ---
+    % For a given axis, "alignment" of one prism is dot(prism.normal, axisVector), i.e. the
+    % cosine of the angle between the prism's axis and that coordinate axis (so it lies in [-1,1]).
+    properties (SetAccess = private)
         averageAlignmentX (1,1) double % Mean alignment of all prisms' normals with the x-axis
         standardDeviationAlignmentX (1,1) double % Standard deviation of prisms' alignment with the x-axis
         volumeWeightedAverageAlignmentX (1,1) double % Volume-weighted mean alignment with the x-axis (each prism weighted by its volume)
