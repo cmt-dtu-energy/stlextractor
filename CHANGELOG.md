@@ -12,6 +12,27 @@ releases. Once the API is considered stable, the package will be released as
 Note: tags `v0.4.0`, `v0.9.0`, and `v0.10.0` were never published; the
 sequence skips directly to the next release.
 
+## [Unreleased]
+
+### Added
+- Documentation site at <https://cmt-dtu-energy.github.io/stlextractor/>
+  (Introduction, Installation, Quickstart, Tutorial, API Reference), built
+  with MkDocs Material and published to GitHub Pages by a new `Docs`
+  workflow. The API reference is generated from the MATLAB help text.
+- README: copy-pasteable installation block, a runnable quickstart using the
+  bundled 48-particle fixture, a public API overview and a "Known
+  limitations" section (#17).
+- Complete MATLAB help text (H1 lines, help blocks, documented
+  `ExtractedPacking` properties) for every public class and function (#18).
+- Expanded tutorial (`docs/tutorials/Tutorial1_Extract.m`): setup, expected
+  output, filtering options, `STLextractToJSON` command-line usage, and which
+  files are written when saving is enabled (#19).
+
+### Changed
+- `ExtractedPacking` properties are grouped into separate `properties`
+  blocks (no behavior change), so each property keeps its own description in
+  the generated reference.
+
 ## [0.15.0] - 2026-10-23
 
 ### Fixed

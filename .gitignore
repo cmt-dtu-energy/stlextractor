@@ -39,3 +39,6 @@ codegen/
 .vscode/settings.json
 tmp/
 /coverageReport
+
+# MkDocs build output
+/site/

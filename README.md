@@ -1,5 +1,9 @@
 # stlextractor - version 0.15.0
 
+[![Docs](https://github.com/cmt-dtu-energy/stlextractor/actions/workflows/docs.yml/badge.svg)](https://cmt-dtu-energy.github.io/stlextractor/)
+[![Tests](https://github.com/cmt-dtu-energy/stlextractor/actions/workflows/tests.yml/badge.svg)](https://github.com/cmt-dtu-energy/stlextractor/actions/workflows/tests.yml)
+
+**Documentation:** <https://cmt-dtu-energy.github.io/stlextractor/>
 
 MATLAB package to process a large STL file containing a packing of multiple hexagonal
 prisms (the only supported form at the moment) and parse each prism,
@@ -32,6 +36,7 @@ this remains the best way to get visibility.
 
 ## Installation
 
+<!-- --8<-- [start:install] -->
 Clone this repo to a location of choice, then add it to the MATLAB path. From
 the MATLAB Command Window:
 
@@ -40,9 +45,11 @@ addpath("/path/to/stlextractor")
 % optionally, make this permanent across MATLAB sessions:
 savepath
 ```
+<!-- --8<-- [end:install] -->
 
 ## Quickstart
 
+<!-- --8<-- [start:quickstart] -->
 The snippet below can be copy-pasted into the MATLAB Command Window right
 after cloning the repo (it uses one of the small STL fixtures bundled with
 the test suite, so no external files are needed):
@@ -61,15 +68,24 @@ fprintf("Extracted %d particles\n", length(packing));
 firstPrism = packing.items(1);
 fprintf("First particle: radius = %.3f, thickness = %.3f\n", ...
     firstPrism.radius, firstPrism.thickness);
+fprintf("Filling fraction: %.3f\n", packing.volumetricFillingFraction);
+
+% render the whole packing in a 3-D figure
+packing.plot();
 ```
 
 (`projectDir` is a small helper function shipped with the package that
 returns the repo's root folder, so the snippet works regardless of your
 current working directory.)
+<!-- --8<-- [end:quickstart] -->
+
+For a longer walkthrough (filtering, saving individual STL files, JSON
+export), see the [Tutorial](https://cmt-dtu-energy.github.io/stlextractor/tutorial/).
 
 ## Usage
 
-See an example [Live Script](./docs/tutorials/Tutorial1_Extract.mlx) for examples of using
+See the [Tutorial](https://cmt-dtu-energy.github.io/stlextractor/tutorial/) on the
+documentation site, or the example [Live Script](./docs/tutorials/Tutorial1_Extract.mlx), for examples of using
 the package (you need to add the [tutorials](./docs/tutorials/) folder to the MATLAB
 path for it to run correctly, or to change the current folder to this path).
 
@@ -79,8 +95,9 @@ parsing and processing the file is an instance of `ExtractedPacking`.
 
 ## Public API overview
 
-A quick map of the main public entry points (full in-code help text and a
-complete function reference are tracked separately in issue #18):
+A quick map of the main public entry points (see the
+[API Reference](https://cmt-dtu-energy.github.io/stlextractor/api/) for the
+full function reference, or run `help <name>` in MATLAB):
 
 - **`STLExtractor`** — main entry point. Construct with
   `STLExtractor(filename, saveDir, "ShouldSave", false)`, then call
@@ -123,6 +140,20 @@ complete function reference are tracked separately in issue #18):
 - Run `coverage` in the MATLAB Command Window to run the tests and open a test coverage report
 - See [docs/known-untested.md](docs/known-untested.md) for the branches the suite deliberately does not cover
 
+
+## Documentation site
+
+The [documentation site](https://cmt-dtu-energy.github.io/stlextractor/) is
+built with [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) by
+the `Docs` workflow and published to GitHub Pages on every push to `main`. The
+API reference is generated from the MATLAB help text, the Quickstart and
+Installation sections are included from this README, and the Tutorial page is
+rendered from `docs/tutorials/Tutorial1_Extract.m`. To preview it locally:
+
+```sh
+pip install -r docs/requirements.txt
+mkdocs serve
+```
 
 ## Versioning
 

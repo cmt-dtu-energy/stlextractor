@@ -1,4 +1,4 @@
-%% Tutorial: how to extract a STL file containing multiple objects into individual STL files
+%% Tutorial: extracting the individual particles from an STL packing
 % Suppose you are simulating some packing of particles. This could be used for
 % fluid flow and heat transfer analysis in porous media, magnetic simulations
 % of grains, some novel design and manufacturing technique etc.
@@ -134,10 +134,10 @@ fprintf("Kept %d of %d particles with BoundingBoxLength = %.3f\n", ...
 % disables the corresponding filter (all particles are kept in that
 % direction). This is the same convention used by |STLextractToJSON|, covered
 % later in this tutorial.
-% Cutoff procedures
+%% Cutoff procedures
 % A major feature of |STLExtractor| is the ability to _cut off_ items from the
 % raw extracted packing. There are three procedures currently implemented in |STLExtractor:|
-% Removing particles whose vertices surpass cut planes
+%% Cutoff by vertices
 % In this first version, you specify a margin and a direction. For instance,
 % in the example below, you specify cut planes 5% off from the maximum and minimum
 % coordinates of the packing (totaling a total 10% margin, which is what is passed
@@ -146,13 +146,13 @@ fprintf("Kept %d of %d particles with BoundingBoxLength = %.3f\n", ...
 
 c1 = l.cutoff(0.1,"x","Method",CutoffMethod.vertices);
 c1.plot;
-% Removing particles whose centers surpass cut planes
+%% Cutoff by centers
 % By changing the |"Method"| argument, only items whose _center points_ surpass
 % the cut planes are removed:
 
 c2 = l.cutoff(0.1,"x","Method",CutoffMethod.centers);
 c2.plot;
-% Removing particles only in the z-direction
+%% Cutoff in the z-direction only
 % In a third method, you can cut the packing only in the z-direction. With this
 % method, |STLExtractor| will calculate the averages of the lengths of the packing
 % in the x and y direction, and then will try to extract a packing with this length
