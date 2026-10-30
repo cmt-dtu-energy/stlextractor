@@ -77,19 +77,19 @@ classdef STLExtractor < handle
       %    EXTRACTEDPACKING.
       %
       % ep = PROCESS(obj,'BoundingBoxLength',L) additionally discards any
-      %    particle whose center falls outside a square of side L centered
-      %    at the origin, in both x and y.
+      %    particle that has at least one vertex outside a square of side L
+      %    centered at the origin, in both x and y.
       %
       % ep = PROCESS(obj,'ZMinLimit',zmin) / PROCESS(obj,'ZMaxLimit',zmax)
-      %    additionally discard particles below zmin, or above zmax,
-      %    respectively.
+      %    additionally discard any particle that has at least one vertex
+      %    with a z-coordinate below zmin, or above zmax, respectively.
       %
       % See also EXTRACTEDPACKING
       arguments
         obj STLExtractor
-        options.BoundingBoxLength (1,1) double = NaN % Maximum length of the packing in both the x- and y-directions; will eliminate any particles with abs(x) (or abs(y)) >= +/- BoundingBoxLength/2
-        options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate particles below this position
-        options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate particles above this position
+        options.BoundingBoxLength (1,1) double = NaN % Maximum length of the packing in both the x- and y-directions; will eliminate any particle with at least one vertex with abs(x) (or abs(y)) >= +/- BoundingBoxLength/2
+        options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate any particle with at least one vertex below this position)
+        options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate any particle with at least one vertex above this position)
       end
 
       [Packing,geometricInfo] = obj.AnalyzeSTL;

@@ -71,17 +71,18 @@ classdef ExtractedPacking < handle
             %       dimensions, volume, filling fraction and alignment statistics.
             %
             %   ep = EXTRACTEDPACKING(prisms,'ZMinLimit',zmin) / ...,'ZMaxLimit',zmax)
-            %       additionally discard prisms below zmin, or above zmax,
-            %       before computing the packing's statistics.
+            %       additionally discard any prism with at least one vertex
+            %       below zmin, or above zmax, before computing the
+            %       packing's statistics.
             %
             %   ep = EXTRACTEDPACKING(prisms,'BoundingBoxLength',L) additionally
-            %       discards prisms whose x- or y-extent falls outside a square
-            %       of side L centered at the origin.
+            %       discards any prism that has at least one vertex outside a
+            %       square of side L centered at the origin.
             arguments
                 prisms (1,:) HexagonalPrism
                 options.BoundingBoxLength (1,1) double = NaN
-                options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate particles below this position
-                options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate particles above this position
+                options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate any particle with at least one vertex below this position)
+                options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate any particle with at least one vertex above this position)
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
