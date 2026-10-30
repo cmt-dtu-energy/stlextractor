@@ -1,8 +1,13 @@
 classdef PackingFigureRenderer < handle
-    %PACKINGFIGURERENDERER Renderer class for visualizing hexagonal prism packings
+    %PACKINGFIGURERENDERER Assign consistent, distinct colors to prism types
+    %   A PackingFigureRenderer assigns each distinct HEXAGONALPRISM type
+    %   (identified by its radius and thickness) a unique, visually distinct
+    %   color from a fixed categorical palette, and remembers that mapping so
+    %   repeated calls return the same color. Instances are created
+    %   automatically by EXTRACTEDPACKING's constructor (as its 'renderer'
+    %   property) and used by EXTRACTEDPACKING.PLOT.
     %
-    % Instances of this class provide instances of EXTRACTEDPACKING with configuration
-    % on how to plot the packing.
+    % See also EXTRACTEDPACKING, HEXAGONALPRISM
     %
     % This class was designed with the help of Claude AI.
 
@@ -15,7 +20,12 @@ classdef PackingFigureRenderer < handle
 
     methods
         function obj = PackingFigureRenderer(prisms)
-            %PACKINGFIGURERENDERER Construct an instance of this class
+            %PACKINGFIGURERENDERER Build a renderer and pre-assign colors
+            %
+            %   r = PACKINGFIGURERENDERER(prisms) builds a renderer for the
+            %       given array of HexagonalPrism objects, assigning each
+            %       distinct (radius,thickness) type a color up front so that
+            %       COLOROF can look it up later.
 
 
             % Initialize color map and scheme
@@ -70,7 +80,10 @@ classdef PackingFigureRenderer < handle
         end
     
         function buildColorTable(obj)
-            
+            % BUILDCOLORTABLE Populate colorMap with one color per distinct
+            %   prism type, assigning colors in order of increasing radius so
+            %   the mapping is deterministic regardless of input order.
+
             % Sort the prisms array by the radius of each element
             [~, sortedIndices] = sort([obj.prisms.radius]);
             obj.prisms = obj.prisms(sortedIndices);

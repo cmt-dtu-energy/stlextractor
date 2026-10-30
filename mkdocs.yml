@@ -1,0 +1,94 @@
+site_name: stlextractor
+site_description: Extract individual hexagonal prisms from an STL packing in MATLAB
+site_url: https://cmt-dtu-energy.github.io/stlextractor/
+repo_url: https://github.com/cmt-dtu-energy/stlextractor
+repo_name: cmt-dtu-energy/stlextractor
+edit_uri: edit/develop/docs/
+
+docs_dir: docs
+
+# Files under docs/ that are not part of the site: binary tutorial assets,
+# scratch output, and internal maintainer notes.
+exclude_docs: |
+  tutorials/*.stl
+  tutorials/*.mlx
+  tutorials/*.m
+  tutorials/tmp/
+  tutorials/captured_entries/
+  hooks/
+  requirements.txt
+  requirements-dev.txt
+  ErrorHandlingConventions.md
+  known-untested.md
+  adr/
+  *.svg
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Introduction: index.md
+  - Installation: installation.md
+  - Quickstart: quickstart.md
+  - Tutorial: tutorial.md
+  - API Reference:
+      - api/index.md
+      - STLExtractor: api/STLExtractor.md
+      - ExtractedPacking: api/ExtractedPacking.md
+      - HexagonalPrism: api/HexagonalPrism.md
+      - STLextractToJSON: api/STLextractToJSON.md
+      - Supporting types: api/supporting.md
+
+hooks:
+  - docs/hooks/livescript.py
+  - docs/hooks/matlab_help.py
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: matlab
+      handlers:
+        matlab:
+          paths: [.]
+          options:
+            docstring_style: null
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            private_members: false
+            hidden_members: false
+            members_order: source
+            parse_arguments: true
+            show_if_no_docstring: false
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: [.]
+      check_paths: true
+

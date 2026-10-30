@@ -1,50 +1,88 @@
 classdef ExtractedPacking < handle
-    %EXTRACTEDPACKING Packing of particles extracted from some mesh file
+    %EXTRACTEDPACKING Packing of hexagonal prisms extracted from a mesh file
+    %   An ExtractedPacking wraps an array of HEXAGONALPRISM objects (its ITEMS)
+    %   together with the geometric bounds, dimensions, volume, filling fraction
+    %   and per-axis alignment statistics of the packing as a whole. It is the
+    %   object returned by STLEXTRACTOR.PROCESS, and is normally not constructed
+    %   directly.
+    %
+    %   ep = EXTRACTEDPACKING(prisms) builds a packing from an array of
+    %       HexagonalPrism objects, computing all geometric properties below.
+    %
+    % See also STLEXTRACTOR, HEXAGONALPRISM
 
     properties
-        renderer
+        renderer % PACKINGFIGURERENDERER used by PLOT to assign a consistent color to each distinct prism type
     end
 
     properties (SetAccess = private)
-        items (1,:) HexagonalPrism
-        xmin (1,1) double
-        xmax (1,1) double
-        ymin (1,1) double
-        ymax (1,1) double
-        zmin (1,1) double
-        zmax (1,1) double
-        Lx (1,1) double
-        Ly (1,1) double
-        Lz (1,1) double
-        volume (1,1) double
-        volumetricFillingFraction (1,1) double
-        averageAlignmentX (1,1) double
-        standardDeviationAlignmentX (1,1) double
-        volumeWeightedAverageAlignmentX (1,1) double
-        volumeWeightedStandardDeviationAlignmentX (1,1) double
-        averageAlignmentY (1,1) double
-        standardDeviationAlignmentY (1,1) double
-        volumeWeightedAverageAlignmentY (1,1) double
-        volumeWeightedStandardDeviationAlignmentY (1,1) double
-        averageAlignmentZ (1,1) double
-        standardDeviationAlignmentZ (1,1) double
-        volumeWeightedAverageAlignmentZ (1,1) double
-        volumeWeightedStandardDeviationAlignmentZ (1,1) double
+        items (1,:) HexagonalPrism % Array of HexagonalPrism objects that make up this packing
+    end
+
+    % --- Geometry bounds: axis-aligned bounding box of all prism vertices ---
+    properties (SetAccess = private)
+        xmin (1,1) double % Minimum x-coordinate over all prism vertices
+        xmax (1,1) double % Maximum x-coordinate over all prism vertices
+        ymin (1,1) double % Minimum y-coordinate over all prism vertices
+        ymax (1,1) double % Maximum y-coordinate over all prism vertices
+        zmin (1,1) double % Minimum z-coordinate over all prism vertices
+        zmax (1,1) double % Maximum z-coordinate over all prism vertices
+    end
+
+    % --- Dimensions and volume of the bounding box ---
+    properties (SetAccess = private)
+        Lx (1,1) double % Bounding-box side length along x (xmax - xmin)
+        Ly (1,1) double % Bounding-box side length along y (ymax - ymin)
+        Lz (1,1) double % Bounding-box side length along z (zmax - zmin)
+        volume (1,1) double % Bounding-box volume (Lx * Ly * Lz); the denominator used by volumetricFillingFraction
+    end
+
+    % --- Filling fraction ---
+    properties (SetAccess = private)
+        volumetricFillingFraction (1,1) double % Fraction of the bounding-box volume occupied by prisms: sum(items.volume) / volume, in [0,1]
+    end
+
+    % --- Alignment statistics: how well each prism's normal aligns with the x, y and z axes ---
+    % For a given axis, "alignment" of one prism is dot(prism.normal, axisVector), i.e. the
+    % cosine of the angle between the prism's axis and that coordinate axis (so it lies in [-1,1]).
+    properties (SetAccess = private)
+        averageAlignmentX (1,1) double % Mean alignment of all prisms' normals with the x-axis
+        standardDeviationAlignmentX (1,1) double % Standard deviation of prisms' alignment with the x-axis
+        volumeWeightedAverageAlignmentX (1,1) double % Volume-weighted mean alignment with the x-axis (each prism weighted by its volume)
+        volumeWeightedStandardDeviationAlignmentX (1,1) double % Volume-weighted standard deviation of alignment with the x-axis
+        averageAlignmentY (1,1) double % Mean alignment of all prisms' normals with the y-axis
+        standardDeviationAlignmentY (1,1) double % Standard deviation of prisms' alignment with the y-axis
+        volumeWeightedAverageAlignmentY (1,1) double % Volume-weighted mean alignment with the y-axis (each prism weighted by its volume)
+        volumeWeightedStandardDeviationAlignmentY (1,1) double % Volume-weighted standard deviation of alignment with the y-axis
+        averageAlignmentZ (1,1) double % Mean alignment of all prisms' normals with the z-axis
+        standardDeviationAlignmentZ (1,1) double % Standard deviation of prisms' alignment with the z-axis
+        volumeWeightedAverageAlignmentZ (1,1) double % Volume-weighted mean alignment with the z-axis (each prism weighted by its volume)
+        volumeWeightedStandardDeviationAlignmentZ (1,1) double % Volume-weighted standard deviation of alignment with the z-axis
     end
 
 
 
     methods
         function obj = ExtractedPacking(prisms,options)
-            %EXTRACTEDPACKING Construct an instance of this class
+            %EXTRACTEDPACKING Construct a packing from an array of hexagonal prisms
             %
             %   ep = EXTRACTEDPACKING(prisms) will create a packing from a given
-            %       array of HEXAGONALPRISM objects. 
+            %       array of HEXAGONALPRISM objects, computing its bounds,
+            %       dimensions, volume, filling fraction and alignment statistics.
+            %
+            %   ep = EXTRACTEDPACKING(prisms,'ZMinLimit',zmin) / ...,'ZMaxLimit',zmax)
+            %       additionally discard any prism with at least one vertex
+            %       below zmin, or above zmax, before computing the
+            %       packing's statistics.
+            %
+            %   ep = EXTRACTEDPACKING(prisms,'BoundingBoxLength',L) additionally
+            %       discards any prism that has at least one vertex outside a
+            %       square of side L centered at the origin.
             arguments
                 prisms (1,:) HexagonalPrism
                 options.BoundingBoxLength (1,1) double = NaN
-                options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate particles below this position
-                options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate particles above this position
+                options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate any particle with at least one vertex below this position)
+                options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate any particle with at least one vertex above this position)
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
@@ -79,14 +117,16 @@ classdef ExtractedPacking < handle
         end
 
         function outputArg = length(obj)
-            %LENGTH Return the number of extracted particles
-            %   Detailed explanation goes here
+            %LENGTH Return the number of extracted particles in this packing
             outputArg = length(obj.items);
         end
 
 
         function f = plot(obj)
-            %PLOTPARTICLES Plot a rendering of the packing.
+            %PLOT Render the packing's prisms in a new 3-D figure.
+            %   Each prism is colored according to its type (radius/thickness)
+            %   using obj.renderer, and the figure is centered on the packing's
+            %   bounding box.
 
             % change width and height
             % from: https://se.mathworks.com/help/releases/R2024b/matlab/ref/figure.html#bvjs6cb-3
@@ -128,8 +168,22 @@ classdef ExtractedPacking < handle
 
 
         function ep = cutoff(obj,margin,startDirection,options)
-            %CUTOFF Create cutoff of another packing, starting by subtracting a margin
-            % from startDirection.
+            %CUTOFF Trim all sides of the packing toward a smaller cube-like region
+            %
+            %   epNew = CUTOFF(obj,margin) removes a fraction 'margin' of the
+            %       side length from every side (x, y and z), symmetrically,
+            %       returning the resulting smaller ExtractedPacking.
+            %
+            %   epNew = CUTOFF(obj,margin,startDirection) is equivalent, and
+            %       startDirection only selects which axis' current length is
+            %       used as the reference side length to shrink (all three axes
+            %       are always trimmed).
+            %
+            %   epNew = CUTOFF(___,'Method',CUTOFFMETHOD.centers) selects
+            %       particles to remove by their center position instead of by
+            %       their vertices (the default).
+            %
+            % See also CUTOFFZ, CUTOFFMETHOD
             arguments
                 obj 
                 margin (1,1) double % Fraction of the side length to remove
@@ -172,7 +226,18 @@ classdef ExtractedPacking < handle
         end
 
         function ep = cutoffz(obj,options)
-            %CUTOFFZ Create cutoff of packing by trimming in the z-direction to make it cube-like.
+            %CUTOFFZ Trim only the z-direction so the packing becomes cube-like
+            %
+            %   epNew = CUTOFFZ(obj) trims the top and bottom of the packing so
+            %       that its z-extent matches the average of its x- and
+            %       y-extents, returning the resulting ExtractedPacking. The x
+            %       and y directions are left unchanged.
+            %
+            %   epNew = CUTOFFZ(obj,'Method',CUTOFFMETHOD.centers) selects
+            %       particles to remove by their center position instead of by
+            %       their vertices (the default).
+            %
+            % See also CUTOFF, CUTOFFMETHOD
             arguments
                 obj 
                 options.Method (1,1) CutoffMethod = CutoffMethod.vertices; % Method to use to select items to cut. If 'vertices', items with any vertice that is beyond the cutplane are removed; if 'centers', then only items whose center are beyond the cut planes are removed.
@@ -246,6 +311,8 @@ classdef ExtractedPacking < handle
         end
 
         function ep = filterPacking(obj,direction,vmin,vmax,options)
+           % FILTERPACKING Keep only items within [vmin,vmax] along one axis,
+           %   returning a new ExtractedPacking built from the surviving items.
            arguments
                 obj 
                 direction (1,1) string {mustBeMember(direction, ["x","y","z"])} = "x"; % From which direction to start cutting

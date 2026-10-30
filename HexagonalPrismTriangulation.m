@@ -1,16 +1,33 @@
 classdef HexagonalPrismTriangulation
-    %HEXAGONALPRISMTRIANGULATION Strategy for creating a simple triangulation for
-    % a prism from its geometric information
+    %HEXAGONALPRISMTRIANGULATION Generate a triangulated hexagonal prism mesh
+    %   This class builds the 12 vertices and 20 triangular faces of a
+    %   hexagonal prism (two hexagonal caps plus six rectangular side faces,
+    %   each split into two triangles) directly from its geometric parameters,
+    %   without needing an existing mesh to read from. It mimics the public
+    %   interface of MATLAB's built-in 'triangulation' (Points and
+    %   ConnectivityList, plus an ISA override) so it can be used wherever a
+    %   triangulation is expected, e.g. as the default triangulation of a
+    %   HEXAGONALPRISM. It is rebuilt as a proper 'triangulation' object before
+    %   being passed to functions like stlwrite that need the full interface
+    %   (see HEXAGONALPRISM.WRITE).
+    %
+    % See also HEXAGONALPRISM
 
     properties
-        Points (12,3) double
-        ConnectivityList (20,3) double
+        Points (12,3) double % 12 vertex coordinates: rows 1-6 are the bottom hexagonal face, rows 7-12 the top face
+        ConnectivityList (20,3) double % 20 triangular faces, each row listing the 3 vertex indices (into Points) of one triangle
     end
 
 
     methods
         function obj = HexagonalPrismTriangulation(position,radius,thickness,normal)
-            %HEXAGONALPRISMTRIANGULATION Construct an instance of this class
+            %HEXAGONALPRISMTRIANGULATION Build a prism mesh from its geometry
+            %
+            %   t = HEXAGONALPRISMTRIANGULATION(position,radius,thickness,normal)
+            %       constructs the 12-vertex, 20-triangle mesh of a hexagonal
+            %       prism centered at 'position', with hexagon 'radius',
+            %       axial 'thickness', and main axis along the unit vector
+            %       'normal'.
             arguments
                 position (1,3) double
                 radius (1,1) double {mustBePositive}
@@ -94,8 +111,13 @@ classdef HexagonalPrismTriangulation
 
         end
 
-        % Override isa to return true for triangulation
         function tf = isa(obj, className)
+            % ISA Override so this class reports as a 'triangulation' too.
+            %   Lets code (and argument validators) that only check
+            %   isa(x,'triangulation') accept this lightweight stand-in; it
+            %   does NOT implement the rest of the triangulation interface
+            %   (e.g. faceNormal), so callers that need that must first
+            %   convert via triangulation(obj.ConnectivityList, obj.Points).
             if strcmp(className, 'triangulation')
                 tf = true;
             else
