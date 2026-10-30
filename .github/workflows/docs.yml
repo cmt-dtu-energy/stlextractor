@@ -9,8 +9,19 @@ name: Docs
 # the latest release.
 #
 # The API reference is generated from the MATLAB help text by
-# mkdocstrings-matlab, which parses the sources directly; no MATLAB license is
-# needed. `--strict` turns broken links and cross-references into failures.
+# mkdocstrings-matlab, which parses the sources directly. `--strict` turns
+# broken links and cross-references into failures.
+#
+# The Tutorial page, by contrast, needs to show the tutorial's *actual*
+# output (printed text and figures), not just its source, so this workflow
+# does run MATLAB: docs/tutorials/capture_output.m executes
+# Tutorial1_Extract.m cell by cell (each cell in its own `matlab -batch`
+# process -- see capture_output.m's own comments for why) and writes
+# docs/tutorials/captured_entries/*.json and captured_figures/*.png, which
+# docs/hooks/livescript.py interleaves into the rendered page. See
+# docs/adr/0001-matlab-ci-for-tutorial-output.md for why. This relies on
+# MathWorks' free hosted licensing for public repos on GitHub-hosted
+# runners, the same mechanism tests.yml already uses.
 #
 # One-time setup: Settings -> Pages -> Source must be set to "GitHub Actions".
 
@@ -45,6 +56,12 @@ jobs:
 
       - name: Test docs hooks
         run: pytest docs/hooks/tests
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v3
+
+      - name: Capture tutorial output
+        run: matlab -batch "cd('docs/tutorials'); run('capture_output.m')"
 
       - name: Build site
         env:

@@ -42,3 +42,12 @@ tmp/
 
 # MkDocs build output
 /site/
+
+# Python bytecode cache (docs/hooks/)
+__pycache__/
+*.pyc
+
+# Tutorial output captured by docs/tutorials/capture_output.m (regenerated
+# by the Docs CI workflow on every build; see ADR 0001)
+docs/tutorials/captured_entries/
+docs/tutorials/captured_figures/

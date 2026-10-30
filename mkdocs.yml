@@ -14,10 +14,13 @@ exclude_docs: |
   tutorials/*.mlx
   tutorials/*.m
   tutorials/tmp/
+  tutorials/captured_entries/
   hooks/
   requirements.txt
+  requirements-dev.txt
   ErrorHandlingConventions.md
   known-untested.md
+  adr/
   *.svg
 
 theme:
