@@ -38,10 +38,8 @@ can work with.
   vertices/edges. Each component must contain exactly one group of 12
   mutually parallel edges (the prism's lateral edges); otherwise extraction
   fails with an `STLExtractor:InvalidParticleGeometry` error.
-- **Platform/version status.** Developed on macOS and Linux; Windows support
-  and the minimum MATLAB release are not yet verified
-  ([#14](https://github.com/cmt-dtu-energy/stlextractor/issues/14),
-  [#15](https://github.com/cmt-dtu-energy/stlextractor/issues/15)).
+- **Minimum MATLAB release.** Requires MATLAB R2024a or newer (tested on
+  Windows, macOS and Linux).
 
 ## Next steps
 

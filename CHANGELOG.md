@@ -27,6 +27,8 @@ sequence skips directly to the next release.
 - Expanded tutorial (`docs/tutorials/Tutorial1_Extract.m`): setup, expected
   output, filtering options, `STLextractToJSON` command-line usage, and which
   files are written when saving is enabled (#19).
+- Documented the supported platform/version matrix: tested on Windows, macOS
+  and Linux, with MATLAB R2024a or newer (#14, #15).
 
 ### Changed
 - `ExtractedPacking` properties are grouped into separate `properties`

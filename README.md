@@ -35,6 +35,9 @@ savepath
 ```
 <!-- --8<-- [end:install] -->
 
+`stlextractor` has been tested on Windows, macOS and Linux, with MATLAB
+versions >= 2024a.
+
 ## Quickstart
 
 <!-- --8<-- [start:quickstart] -->
@@ -69,8 +72,6 @@ current working directory.)
 
 For a longer walkthrough (filtering, saving individual STL files, JSON
 export), see the [Tutorial](https://cmt-dtu-energy.github.io/stlextractor/tutorial/).
-
-`stlextractor` has been tested on Windows, macOS and Linux, with MATLAB versions >= 2024a.
 
 ## Usage
 
@@ -118,11 +119,8 @@ full function reference, or run `help <name>` in MATLAB):
   the prism's axis and height; if a connected component does not match this
   pattern, extraction fails with an `STLExtractor:InvalidParticleGeometry`
   error.
-- **Platform/version status is unverified.** The package is developed and
-  exercised on macOS and Linux; behavior on Windows has not been verified
-  (tracked in issue #14). Likewise, the minimum supported MATLAB release and
-  the exact set of required toolboxes have not yet been pinned down (tracked
-  in issue #15). Treat both as open questions rather than assumptions.
+- **Minimum MATLAB release.** Requires MATLAB R2024a or newer; tested on
+  Windows, macOS and Linux.
 
 ## Testing
 

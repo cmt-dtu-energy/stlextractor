@@ -25,11 +25,8 @@ which STLExtractor    % should point inside the folder you cloned
 
 ## Requirements
 
-- MATLAB with the `arguments` block syntax (R2019b or newer). The exact
-  minimum release and toolbox requirements have not been pinned down yet
-  ([#15](https://github.com/cmt-dtu-energy/stlextractor/issues/15)).
-- Developed and tested on macOS and Linux; Windows has not been verified
-  ([#14](https://github.com/cmt-dtu-energy/stlextractor/issues/14)).
+- MATLAB R2024a or newer.
+- Tested on Windows, macOS and Linux.
 
 ## Running the tests
 
