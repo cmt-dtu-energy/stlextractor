@@ -61,7 +61,9 @@ jobs:
         uses: matlab-actions/setup-matlab@v3
 
       - name: Capture tutorial output
-        run: matlab -batch "cd('docs/tutorials'); run('capture_output.m')"
+        uses: matlab-actions/run-command@v2
+        with:
+          command: cd('docs/tutorials'); run('capture_output.m')
 
       - name: Build site
         env:
