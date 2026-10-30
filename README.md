@@ -21,18 +21,6 @@ a certain mechanical strength). Alternatively, you can just use the project
 to save the individual STL files and import them into a simulation software, manually setting
 up different parameters.
 
-## Maintainer status
-
-As of October 2026, the original maintainer, Fábio Pinto Fortkamp, has
-stepped back from active day-to-day maintenance of this project. The
-designated points of contact within the `cmt-dtu-energy` organization are:
-
-- Andrea Insinga ([aroin@dtu.dk](mailto:aroin@dtu.dk))
-- Rasmus Bjørk ([rabj@dtu.dk](mailto:rabj@dtu.dk))
-
-For bug reports, feature requests, or questions, please open a
-[GitHub issue](https://github.com/cmt-dtu-energy/stlextractor/issues) —
-this remains the best way to get visibility.
 
 ## Installation
 
@@ -81,6 +69,8 @@ current working directory.)
 
 For a longer walkthrough (filtering, saving individual STL files, JSON
 export), see the [Tutorial](https://cmt-dtu-energy.github.io/stlextractor/tutorial/).
+
+`stlextractor` has been tested on Windows, macOS and Linux, with MATLAB versions >= 2024a.
 
 ## Usage
 
