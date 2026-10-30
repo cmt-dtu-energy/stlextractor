@@ -38,10 +38,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: docs/requirements.txt
+          cache-dependency-path: docs/requirements-dev.txt
 
-      - name: Install MkDocs
-        run: pip install -r docs/requirements.txt
+      - name: Install MkDocs and test dependencies
+        run: pip install -r docs/requirements-dev.txt
+
+      - name: Test docs hooks
+        run: pytest docs/hooks/tests
 
       - name: Build site
         env:
