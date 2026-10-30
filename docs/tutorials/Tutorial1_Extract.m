@@ -93,7 +93,7 @@ disp(l);
 %
 % You can also plot a rendering of the items:
 
-l.plot
+l.plot;
 %% Filtering the packing while it is being extracted
 % Besides the post-hoc cutoff procedures shown further below, |process| itself
 % accepts three name-value options that filter out particles *before* the
